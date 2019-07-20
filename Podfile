@@ -7,4 +7,6 @@ target 'inPixtagram' do
 
   # Pods for inPixtagram
 pod 'AlamofireImage'
+pod 'SquareFlowLayout'
+ pod 'VegaScrollFlowLayout'
 end
