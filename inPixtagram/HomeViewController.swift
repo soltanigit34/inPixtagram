@@ -51,12 +51,13 @@ extension HomeViewController  :  UICollectionViewDelegate , UICollectionViewData
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "ImageCVCell", for: indexPath) as! ImageCVCell
-
+    
         cell.imageId = imageIdArray[indexPath.item]
         cell.backgroundColor  = .yellow
        
-//        print("cell URL ID: \(cell.imageId) at indexpath : \(indexPath.item)")
+
         return cell
     }
     
@@ -64,7 +65,7 @@ extension HomeViewController  :  UICollectionViewDelegate , UICollectionViewData
         let cell =  collectionView.cellForItem( at: indexPath) as! ImageCVCell
         let imageId : Int = cell.imageId!
         
-//        print("selrct cell URL ID: \(cell.imageId) at indexpath : \(indexPath.item)")
+
 
         
         
@@ -124,7 +125,7 @@ extension HomeViewController {
     }
     
     func initiationOfImages(){
-        for _ in 0 ..< 12 {
+        for _ in 0 ..< 120 {
            fetchImageAddress()
         }
     }

@@ -11,24 +11,23 @@ import UIKit
 class PopupImageViewController: UIViewController {
 
 
-    @IBOutlet weak var largeImageView: UIImageView!
+    @IBOutlet weak var largeImageView: HSxUIImageView!
     @IBOutlet weak var saveButton: UIButton!
     
 //    var allImagesIdArrayInSaved : [Int] = []
     
     var imageAddress = ""
+    var imageSize = 400
     var imageId : Int? {
         didSet{
-             imageAddress =  "https://picsum.photos/id/\(imageId!)/400/600"
+             imageAddress =  "https://picsum.photos/id/\(imageId!)/\(imageSize)/\(imageSize)"
             
         }
     }
     override func viewDidLoad() {
         super.viewDidLoad()
         
-      largeImageView.downloadImage(imageURL: imageAddress)
-
-       
+        largeImageView.downloadImageFromWeb(urlString: imageAddress, imageId: imageId!, imageSize: imageSize)
     }
 
 

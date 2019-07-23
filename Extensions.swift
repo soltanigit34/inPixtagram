@@ -23,17 +23,8 @@ extension UIImageView {
             url = URL(string: sample)!
         }
         
-        //        let url = URL(string: imageURL!)!
         let placeholderImage = UIImage(named: "pure")!
-        //        let filter = AspectScaledToFillSizeWithRoundedCornersFilter(
-        //            size: self.frame.size,
-        //            radius: 40
-        //        )
-//        self.af_setImage(
-//            withURL: url,
-//            placeholderImage: placeholderImage
-//            //            filter: filter
-//        )
+  
         
         self.af_setImage(withURL: url, placeholderImage: placeholderImage, filter: nil, progress: nil, progressQueue: DispatchQueue.main, imageTransition: UIImageView.ImageTransition.noTransition, runImageTransitionIfCached: false) { (response) in
             if (response.result.error != nil)
@@ -47,23 +38,106 @@ extension UIImageView {
 }
 
 
-extension UIImageView {
-    func downloaded(from url: URL, contentMode mode: UIView.ContentMode = .scaleAspectFit) {  // for swift 4.2 syntax just use ===> mode: UIView.ContentMode
-        contentMode = mode
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            guard
-                let httpURLResponse = response as? HTTPURLResponse, httpURLResponse.statusCode == 200,
-                let mimeType = response?.mimeType, mimeType.hasPrefix("image"),
-                let data = data, error == nil,
-                let image = UIImage(data: data)
-                else { return }
-            DispatchQueue.main.async() {
-                self.image = image
-            }
-            }.resume()
+class xDownloader {
+    
+    static func saveImage(image: UIImage , fileName : String) -> Bool {
+        guard let data = image.jpegData(compressionQuality: 1) ?? image.pngData() else {
+            return false
+        }
+        guard let directory = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) as NSURL else {
+            return false
+        }
+        do {
+            try data.write(to: directory.appendingPathComponent(fileName)!)
+            return true
+        } catch {
+            print(error.localizedDescription)
+            return false
+        }
     }
-    func downloaded(from link: String, contentMode mode: UIView.ContentMode = .scaleAspectFit) {  // for swift 4.2 syntax just use ===> mode: UIView.ContentMode
-        guard let url = URL(string: link) else { return }
-        downloaded(from: url, contentMode: mode)
+    
+    static func getSavedImage(named: String) -> UIImage? {
+        if let dir = try? FileManager.default.url(for: .documentDirectory, in: .userDomainMask, appropriateFor: nil, create: false) {
+            return UIImage(contentsOfFile: URL(fileURLWithPath: dir.absoluteString).appendingPathComponent(named).path)
+        }
+        return nil
+    }
+    
+}
+
+
+extension URL {
+    static var documentsDirectory: URL {
+        let documentsDirectory = NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true).first!
+        return try! documentsDirectory.asURL()
+    }
+    
+    static func urlInDocumentsDirectory(with filename: String) -> URL {
+        return documentsDirectory.appendingPathComponent(filename)
+    }
+}
+
+
+let imageCache = NSCache<NSString, UIImage> ()
+
+class HSxUIImageView : UIImageView {
+    
+    var imageUrlString : String?
+    
+    func downloadImageFromWeb(urlString : String , imageId : Int , imageSize : Int){
+        let fileName  = "\(imageId)_\(imageSize)"
+        let url = URL(string: urlString)
+        
+        image = nil
+        imageUrlString = urlString
+        
+        let configuration = URLSessionConfiguration.default
+        let session = URLSession.init(configuration: configuration)
+        
+        
+        let task = session.dataTask(with: url!) { (data, response, error) in
+           
+            if error != nil {
+                return
+            }
+            if data == nil {
+                return
+            }
+            
+            
+            if let image = xDownloader.getSavedImage(named: fileName){
+                DispatchQueue.main.async {
+                    if self.imageUrlString == urlString {
+                         self.image = image
+                    }
+                    return
+                }
+            }else{
+                if let cachedImage = imageCache.object(forKey: fileName as NSString){
+                    DispatchQueue.main.async {
+                        if self.imageUrlString == urlString {
+                              self.image = cachedImage
+                        }
+                      
+                        return
+                    }
+                }else {
+                    if let imageFromData = UIImage(data: data!){
+                        imageCache.setObject(imageFromData, forKey: fileName as NSString)
+                       let successOfSaving = xDownloader.saveImage(image: imageFromData, fileName: fileName)
+                        print(successOfSaving)
+                        DispatchQueue.main.async {
+                            if self.imageUrlString == urlString {
+                                  self.image = imageFromData
+                            }
+                           
+                        }
+                    }
+                }
+                
+            }
+        }
+        
+        task.resume()
     }
 }
