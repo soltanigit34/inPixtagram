@@ -12,6 +12,12 @@ import SquareFlowLayout
 
 class HomeViewController: UIViewController  {
 
+    let columns : CGFloat = 4
+    let inset : CGFloat = 1
+    var spacing : CGFloat = 1
+    var lineSpacing : CGFloat = 1
+     var prevIsMax = false
+    
     enum CellType {
         case normal
         case expanded
@@ -34,8 +40,9 @@ class HomeViewController: UIViewController  {
    
         cvDelegates()
         initiationOfImages()
-        setupLayoutValues()
-        setLayout()
+//        setupLayoutValues()
+//        setLayout()
+//        setGridLayout()
         refresh()
      
     }
@@ -92,6 +99,12 @@ extension HomeViewController {
         let flowLayout = SquareFlowLayout()
         flowLayout.flowDelegate = self
         self.collectionView.collectionViewLayout = flowLayout
+    }
+    
+    func setGridLayout(){
+        let gridLayout = GridLayout()
+        gridLayout.fixedDivisionCount = 3 // Columns for .vertical, rows for .horizontal
+        collectionView.collectionViewLayout = gridLayout
     }
     
     func cvDelegates() {
@@ -172,3 +185,46 @@ extension HomeViewController {
     }
 }
 
+extension HomeViewController : UICollectionViewDelegateFlowLayout {
+    
+ 
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
+
+       
+        let width = collectionView.frame.width
+        let maxCell = width * 2 / 3 - (inset + spacing  )
+        let midCell = width / 2 - (inset + spacing  )
+        let minCell = width / 3 - (inset + spacing  )
+        
+        let cgsMin = CGSize(width: minCell, height: maxCell)
+        let cgsMid = CGSize(width: midCell, height: maxCell)
+        let cgsMax = CGSize(width: maxCell, height: maxCell)
+
+        var silverSize = CGSize()
+        
+        if ( indexPath.item % 4 == 0 || indexPath.item % 4 == 1 ){
+            silverSize = cgsMid
+        }else {
+            if prevIsMax == true {
+                silverSize = cgsMin
+                prevIsMax = false
+            }else {
+                silverSize  = cgsMax
+                prevIsMax = true
+            }
+       
+        }
+        return silverSize
+    }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, insetForSectionAt section: Int) -> UIEdgeInsets {
+        return UIEdgeInsets.init(top: inset, left: inset, bottom: inset, right: inset)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumInteritemSpacingForSectionAt section: Int) -> CGFloat {
+        return spacing
+    }
+    func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, minimumLineSpacingForSectionAt section: Int) -> CGFloat {
+        return lineSpacing
+    }
+}

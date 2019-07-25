@@ -20,13 +20,12 @@ class ImageCVCell: UICollectionViewCell {
         let imageAddress = "https://picsum.photos/id/\(imageId!)/\(imageSize)/\(imageSize)"
             
             imageThumb.downloadImageFromWeb(urlString: imageAddress, imageId: imageId!, imageSize: imageSize)
-           
+           imageThumb.contentMode = .scaleAspectFill
         }
     }
     override func awakeFromNib() {
         super.awakeFromNib()
-       
-        
-        
     }
+    
+
 }
